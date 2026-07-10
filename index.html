@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Area 1 · Membership Dashboard</title>
+<style>
+  :root{
+    --navy:#16294d; --navy2:#1F3864; --blue:#2E5496; --blue-soft:#eaf0fb;
+    --jeru:#2E5496; --jeru-grad:linear-gradient(135deg,#2E5496,#1F3864);
+    --judea:#0E7C86; --judea-grad:linear-gradient(135deg,#12909b,#0b5c63);
+    --bg:#f2f5fa; --card:#ffffff; --ink:#182238; --muted:#69728a;
+    --line:#e7ecf4; --good:#158043; --warn:#c06a10;
+    --sh:0 1px 2px rgba(20,33,61,.06),0 10px 30px rgba(20,33,61,.07);
+    --sh-sm:0 1px 2px rgba(20,33,61,.06),0 3px 10px rgba(20,33,61,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:"Segoe UI",-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  /* top nav */
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .topbar-in{max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:14px 22px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--navy);font-size:16px;letter-spacing:.2px}
+  .logo{width:30px;height:30px;border-radius:9px;background:var(--jeru-grad);display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;letter-spacing:.5px;box-shadow:var(--sh-sm)}
+  nav.tabs{display:flex;gap:4px;margin-left:auto;background:#eef2f8;padding:4px;border-radius:11px}
+  nav.tabs a{padding:8px 15px;border-radius:8px;font-size:13.5px;font-weight:600;color:var(--muted);transition:.15s;white-space:nowrap}
+  nav.tabs a.active{background:#fff;color:var(--navy);box-shadow:var(--sh-sm)}
+  nav.tabs a:hover:not(.active){color:var(--navy)}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 70px}
+  .page{display:none;animation:fade .35s ease}
+  .page.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .phead{margin:2px 0 20px}
+  .phead h1{margin:0;font-size:26px;color:var(--navy);letter-spacing:.2px}
+  .phead p{margin:6px 0 0;color:var(--muted);font-size:13.5px}
+  .updated{font-size:12px;color:var(--muted)}
+  /* kpi */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .kpi{background:var(--card);border-radius:14px;padding:18px 20px;box-shadow:var(--sh);border:1px solid var(--line);position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--jeru)}
+  .kpi.k-lead::before{background:var(--blue)} .kpi.k-good::before{background:var(--good)} .kpi.k-warn::before{background:var(--warn)}
+  .kpi .n{font-size:34px;font-weight:800;color:var(--navy);line-height:1}
+  .kpi .l{font-size:11.5px;color:var(--muted);margin-top:8px;text-transform:uppercase;letter-spacing:.7px;font-weight:700}
+  .kpi.k-warn .n{color:var(--warn)} .kpi.k-good .n{color:var(--good)}
+  /* generic card */
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--sh);border:1px solid var(--line);overflow:hidden;margin-bottom:22px}
+  .card-h{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .card-h h2{margin:0;font-size:16px;color:var(--navy)}
+  .card-h .hint{font-size:12px;color:var(--muted)}
+  .card-b{padding:8px 22px 18px}
+  /* zone summary cards (overview) */
+  .zgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+  .zcard{border-radius:16px;box-shadow:var(--sh);overflow:hidden;color:#fff;position:relative;cursor:pointer;transition:.2s}
+  .zcard:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(20,33,61,.18)}
+  .zcard.jeru{background:var(--jeru-grad)} .zcard.judea{background:var(--judea-grad)}
+  .zcard .zc-b{padding:22px 24px}
+  .zcard h3{margin:0 0 2px;font-size:20px}
+  .zcard .sub{opacity:.85;font-size:12.5px}
+  .zcard .row{display:flex;gap:26px;margin-top:18px}
+  .zcard .row b{display:block;font-size:26px;font-weight:800}
+  .zcard .row span{font-size:11.5px;opacity:.85;text-transform:uppercase;letter-spacing:.5px}
+  .zcard .go{position:absolute;right:22px;bottom:20px;font-size:13px;font-weight:700;opacity:.9}
+  /* bar breakdown */
+  .brk{display:flex;flex-direction:column;gap:11px;padding-top:6px}
+  .brkrow{display:grid;grid-template-columns:120px 1fr 34px;align-items:center;gap:12px}
+  .brkrow .nm{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .track{background:#eef1f6;border-radius:7px;height:12px;overflow:hidden}
+  .fill{height:100%;border-radius:7px;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+  .brkrow .c{text-align:right;font-weight:800;font-variant-numeric:tabular-nums;color:var(--navy);font-size:14px}
+  .brkrow.un .nm,.brkrow.un .c{color:var(--muted);font-style:italic}
+  /* leader fellowship cards */
+  .lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .lcard{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:#fff;box-shadow:var(--sh-sm);transition:.18s}
+  .lcard:hover{box-shadow:var(--sh);transform:translateY(-2px)}
+  .lcard .lh{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+  .av{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0}
+  .lcard .who{font-weight:800;font-size:15px;color:var(--navy);line-height:1.1}
+  .lcard .cnt{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .lcard ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+  .lcard li{font-size:13px;padding:4px 8px;border-radius:6px;color:var(--ink)}
+  .lcard li:nth-child(odd){background:#f6f8fc}
+  .lcard.empty .who{color:var(--muted)}
+  .lcard li.none{color:var(--muted);font-style:italic;background:none}
+  /* search */
+  .search{width:100%;max-width:280px;font-family:inherit;font-size:13.5px;padding:9px 13px;border:1px solid var(--line);border-radius:9px;background:#fff}
+  .note{display:flex;gap:10px;align-items:flex-start;background:#fff8ec;border:1px solid #f4e3c4;color:#8a5a10;padding:12px 15px;border-radius:11px;font-size:13px;margin-bottom:20px}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:30px;line-height:1.7}
+  @media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.zgrid{grid-template-columns:1fr}.brkrow{grid-template-columns:100px 1fr 30px}}
+  @media(max-width:520px){.topbar-in{flex-wrap:wrap}nav.tabs{margin-left:0;width:100%;justify-content:space-between}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><span class="logo">A1</span> Area 1 · Membership</div>
+    <nav class="tabs" id="tabs">
+      <a href="#overview" data-p="overview">Overview</a>
+      <a href="#jerusalem" data-p="jerusalem">Jerusalem</a>
+      <a href="#judea" data-p="judea">Judea</a>
+    </nav>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- OVERVIEW -->
+  <section class="page" id="p-overview">
+    <div class="phead"><h1>Membership Overview</h1><p class="updated" id="upd"></p></div>
+    <div class="kpis" id="ov-kpis"></div>
+    <div class="zgrid" id="ov-zones"></div>
+  </section>
+
+  <!-- JERUSALEM -->
+  <section class="page" id="p-jerusalem"></section>
+
+  <!-- JUDEA -->
+  <section class="page" id="p-judea"></section>
+
+  <div class="foot">Area 1 Membership Dashboard · read-only view</div>
+</div>
+
+<script>
+const DATA = {"zones": {"Jerusalem": {"leaders": ["PGabe", "PAlbert", "DQ", "Joojo", "Dawson", "Precious", "Simi", "Sarah", "Dolapo"], "members": [{"name": "Sherese", "leader": "PGabe"}, {"name": "Kirsten", "leader": "PGabe"}, {"name": "Joshua Bishop", "leader": "PGabe"}, {"name": "Vicky", "leader": "PGabe"}, {"name": "Jeremy F", "leader": "PAlbert"}, {"name": "Ledum", "leader": "PAlbert"}, {"name": "Joy", "leader": "PAlbert"}, {"name": "Renne", "leader": "PAlbert"}, {"name": "Vanessa Q", "leader": "DQ"}, {"name": "Serenity", "leader": "DQ"}, {"name": "A'Lena", "leader": "Joojo"}, {"name": "Nicolas M.", "leader": "Joojo"}, {"name": "Amalia", "leader": "Joojo"}, {"name": "Valerie N.", "leader": "Dawson"}, {"name": "Rashawn", "leader": "Dawson"}, {"name": "Sylvester", "leader": "Dolapo"}, {"name": "Nate", "leader": "PAlbert"}, {"name": "Allen", "leader": "Precious"}, {"name": "Tyson", "leader": "Precious"}, {"name": "Zufan", "leader": "Dawson"}, {"name": "Precious A.", "leader": "Simi"}, {"name": "Mia G.", "leader": "Simi"}, {"name": "Jocelyn", "leader": "Sarah"}, {"name": "Jasmine Oppenheimer", "leader": "Sarah"}, {"name": "Ehioma", "leader": "Simi"}, {"name": "Etieno", "leader": "Joojo"}, {"name": "Nico Brown", "leader": "Dolapo"}, {"name": "Zaneiha", "leader": "Sarah"}, {"name": "KeBreanna", "leader": "Simi"}]}, "Judea": {"leaders": ["Judea", "Damola", "Blu", "John Mark", "Millicent", "Annie", "Vera", "Derin", "Naa", "Zarah"], "members": [{"name": "Valerie M", "leader": ""}, {"name": "Tinnie", "leader": ""}, {"name": "Journey", "leader": ""}, {"name": "SMaya", "leader": ""}, {"name": "Taylor Ross", "leader": ""}, {"name": "Keyla Robbins", "leader": ""}, {"name": "Alisée", "leader": ""}, {"name": "Mariam", "leader": ""}, {"name": "Kayla Williams", "leader": ""}, {"name": "Jay", "leader": ""}, {"name": "Cybelle", "leader": ""}, {"name": "Megan", "leader": ""}, {"name": "Amanda", "leader": ""}, {"name": "Mylea", "leader": ""}, {"name": "Daevon", "leader": ""}, {"name": "Calvin", "leader": ""}, {"name": "Marie", "leader": ""}, {"name": "Mitchell", "leader": ""}, {"name": "Danika", "leader": ""}, {"name": "Abby", "leader": ""}, {"name": "Jess", "leader": ""}, {"name": "Alivia", "leader": ""}, {"name": "GG", "leader": ""}, {"name": "Dynasty", "leader": ""}]}}};
+const UPDATED = "Updated July 10, 2026";
+const ACC = {Jerusalem:{bar:'#2E5496',grad:'linear-gradient(135deg,#3a63a8,#1F3864)'},
+             Judea:{bar:'#0E7C86',grad:'linear-gradient(135deg,#12909b,#0b5c63)'}};
+
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function initials(n){const p=n.trim().split(/\s+/);return ((p[0]||'')[0]||'').toUpperCase()+((p[1]||'')[0]||'').toUpperCase();}
+function stats(z){
+  const zd=DATA.zones[z], counts={}; zd.leaders.forEach(l=>counts[l]=[]);
+  let un=[];
+  zd.members.forEach(m=>{ if(m.leader&&counts[m.leader]) counts[m.leader].push(m.name); else un.push(m.name); });
+  return {counts,un,members:zd.members.length,leaders:zd.leaders.length,assigned:zd.members.length-un.length};
+}
+
+// ---------- Overview ----------
+function renderOverview(){
+  document.getElementById('upd').textContent=UPDATED;
+  let tM=0,tL=0,tA=0,tU=0;
+  Object.keys(DATA.zones).forEach(z=>{const s=stats(z);tM+=s.members;tL+=s.leaders;tA+=s.assigned;tU+=s.un.length;});
+  document.getElementById('ov-kpis').innerHTML=[
+    ['',tM,'Total Members'],['k-lead',tL,'Fellowship Leaders'],
+    ['k-good',tA,'Assigned'],[tU>0?'k-warn':'k-good',tU,'Unassigned']
+  ].map(([c,n,l])=>`<div class="kpi ${c}"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+
+  document.getElementById('ov-zones').innerHTML=Object.keys(DATA.zones).map(z=>{
+    const s=stats(z), cls=z==='Jerusalem'?'jeru':'judea';
+    return `<a class="zcard ${cls}" href="#${z.toLowerCase()}" onclick="go('${z.toLowerCase()}')">
+      <div class="zc-b">
+        <h3>${z}</h3><div class="sub">${s.leaders} fellowship leaders</div>
+        <div class="row">
+          <div><b>${s.members}</b><span>Members</span></div>
+          <div><b>${s.assigned}</b><span>Assigned</span></div>
+          <div><b>${s.un.length}</b><span>Unassigned</span></div>
+        </div>
+        <div class="go">View zone →</div>
+      </div></a>`;
+  }).join('');
+}
+
+// ---------- Zone page ----------
+function renderZone(z){
+  const s=stats(z), acc=ACC[z], zd=DATA.zones[z];
+  const maxc=Math.max(1,...zd.leaders.map(l=>s.counts[l].length));
+  const bars=zd.leaders.map(l=>{
+    const c=s.counts[l].length,w=Math.round(c/maxc*100);
+    return `<div class="brkrow"><div class="nm">${esc(l)}</div>
+      <div class="track"><div class="fill" style="width:${w}%;background:${acc.bar}"></div></div>
+      <div class="c">${c}</div></div>`;
+  }).join('')+
+    `<div class="brkrow un"><div class="nm">(Unassigned)</div>
+      <div class="track"><div class="fill" style="width:${Math.round(s.un.length/maxc*100)}%;background:#c3ccda"></div></div>
+      <div class="c">${s.un.length}</div></div>`;
+
+  const cards=zd.leaders.map(l=>{
+    const mem=s.counts[l];
+    return `<div class="lcard ${mem.length?'':'empty'}">
+      <div class="lh"><div class="av" style="background:${acc.grad}">${esc(initials(l))}</div>
+        <div><div class="who">${esc(l)}</div><div class="cnt">${mem.length} member${mem.length===1?'':'s'}</div></div></div>
+      <ul>${mem.length?mem.map(n=>`<li>${esc(n)}</li>`).join(''):'<li class="none">No members yet</li>'}</ul>
+    </div>`;
+  }).join('');
+  const unCard = s.un.length?`<div class="lcard empty">
+      <div class="lh"><div class="av" style="background:#aab4c6">–</div>
+      <div><div class="who">Unassigned</div><div class="cnt">${s.un.length} member${s.un.length===1?'':'s'}</div></div></div>
+      <ul>${s.un.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:'';
+
+  const note = s.un.length===s.members?`<div class="note">⚠️ <div>No members in ${z} have been assigned to a fellowship leader yet.</div></div>`:'';
+
+  document.getElementById('p-'+z.toLowerCase()).innerHTML=`
+    <div class="phead"><h1>${z} Zone</h1><p>${s.members} members across ${s.leaders} fellowship leaders · ${s.assigned} assigned, ${s.un.length} unassigned</p></div>
+    <div class="kpis">
+      <div class="kpi"><div class="n">${s.members}</div><div class="l">Members</div></div>
+      <div class="kpi k-lead"><div class="n">${s.leaders}</div><div class="l">Leaders</div></div>
+      <div class="kpi k-good"><div class="n">${s.assigned}</div><div class="l">Assigned</div></div>
+      <div class="kpi ${s.un.length?'k-warn':'k-good'}"><div class="n">${s.un.length}</div><div class="l">Unassigned</div></div>
+    </div>
+    ${note}
+    <div class="card"><div class="card-h"><h2>Members per fellowship leader</h2><span class="hint">live count</span></div>
+      <div class="card-b"><div class="brk">${bars}</div></div></div>
+    <div class="card"><div class="card-h"><h2>Fellowships</h2>
+        <input class="search" placeholder="Search a member…" oninput="filterMembers('${z.toLowerCase()}',this.value)"></div>
+      <div class="card-b"><div class="lgrid" id="lg-${z.toLowerCase()}">${cards}${unCard}</div></div></div>`;
+}
+
+function filterMembers(zid,q){
+  q=q.trim().toLowerCase();
+  document.querySelectorAll('#lg-'+zid+' .lcard').forEach(card=>{
+    let any=false;
+    card.querySelectorAll('li').forEach(li=>{
+      if(li.classList.contains('none'))return;
+      const hit=li.textContent.toLowerCase().includes(q);
+      li.style.display=hit||!q?'':'none'; if(hit)any=true;
+    });
+    card.style.display=(!q||any)?'':'none';
+  });
+}
+
+// ---------- routing ----------
+function go(p){
+  document.querySelectorAll('.page').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById('p-'+p)||document.getElementById('p-overview');
+  el.classList.add('on');
+  document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('active',a.dataset.p===p));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.addEventListener('hashchange',()=>go((location.hash||'#overview').slice(1)));
+
+renderOverview();
+renderZone('Jerusalem');
+renderZone('Judea');
+go((location.hash||'#overview').slice(1));
+</script>
+</body>
+</html>
